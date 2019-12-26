@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>with js</title>
+    <style>
+        html {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-size: 0;
+            margin: 0;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
+        }
+
+        .item {
+            border: 1px solid salmon;
+            width: 25%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app"></div>
+    <script src="https://unpkg.com/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
+    <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+    <script>
+
+        var $app = document.querySelector('.app');
+
+        var msnry = new Masonry($app, {
+            itemSelector: '.item',
+        });
+
+        var getRandom = function () {
+            var opts = [60, 80, 100, 120, 160, 300];
+            var random = Math.floor(Math.random() * opts.length);
+            return opts[random]
+        }
+        var getImageUrl = function (n) {
+            return `https://fakeimg.pl/${getRandom()}x${getRandom()}?text=${n}`;
+        }
+
+        var render = function (node) {
+            var items = [];
+            for (var i = 0; i < 12; i++) {
+                var item = document.createElement('div');
+                item.className = 'item';
+                item.innerHTML = `<img src="${getImageUrl(i)}" alt="">`
+                items.push(node.appendChild(item))
+            }
+
+            // msnry.appended(items);
+            msnry.addItems(items);
+            imagesLoaded(items, function (instance) {
+                msnry.layout();
+            });
+        }
+
+        render($app);
+    </script>
+</body>
+
+</html>
