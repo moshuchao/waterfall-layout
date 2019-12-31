@@ -27,6 +27,9 @@
             width: 25%;
             overflow: hidden;
             position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
             transition: all 200ms linear;
         }
     </style>
@@ -62,31 +65,26 @@
             }
 
             setPosition(el, left, top) {
-                el.style = `left: ${left}px; top: ${top}px;`
+                el.style = `left: ${left}px; top: ${top}px; opacity: 1;`
             }
             layout() {
                 var children = Array.from(this.items);
                 var firstChild = this.element.firstElementChild;
                 if (!firstChild) return;
-                var width = firstChild.getBoundingClientRect().width;
+                var colWidth = firstChild.getBoundingClientRect().width;
                 var containerWidth = this.element.getBoundingClientRect().width;
-                var n = Math.floor(containerWidth / width);
+                var cols = Math.floor(containerWidth / colWidth);
                 var hs = [];
 
                 var pos = [], i = 0, l = children.length;
                 for (; i < l; i++) {
-                    var j = i % n, x = j * width, y = 0;
-                    if (i < n) {
-                        hs[i] = children[j].getBoundingClientRect().height;
-                        pos.push([x, y]);
-                        this.setPosition(children[i], x, y);
-                        continue;
+                    if (i < cols) {
+                        hs.push(0);
                     }
 
-
-                    j = hs.indexOf(Math.min.apply(Math, hs));
-                    x = j * width;
-                    y = hs[j];
+                    var j = hs.indexOf(Math.min.apply(Math, hs)),
+                        x = j * colWidth,
+                        y = hs[j];
                     pos.push([x, y]);
                     hs[j] += children[i].getBoundingClientRect().height;
                     this.setPosition(children[i], x, y);
