@@ -51,12 +51,10 @@
         }
 
         class Waterfall {
-            element = null
-            cloumnWith = 0
-            items = []
             constructor(element, opts = {}) {
                 this.element = element;
                 this.element.style.position = 'relative';
+                this.items = [];
                 this.layout();
             }
             addItems(items = []) {
