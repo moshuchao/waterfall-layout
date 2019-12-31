@@ -58,25 +58,28 @@
                 this.element = element;
                 this.element.style.position = 'relative';
                 this.items = [];
+                this.hs = [];
                 this.layout();
             }
-            addItems(items = []) {
-                this.items = this.items.concat(items);
-            }
-
             setPosition(el, left, top) {
                 el.style = `left: ${left}px; top: ${top}px; opacity: 1;`
             }
-            layout() {
-                var children = Array.from(this.items);
+            layout(items) {
                 var firstChild = this.element.firstElementChild;
                 if (!firstChild) return;
+
+                var children = this.items, i = 0, hs = [];
+                if (items) {
+                    hs = this.hs;
+                    i = this.items.length;
+                    children = this.items.concat(Array.from(items));
+                }
+
+                var l = children.length;
                 var colWidth = firstChild.getBoundingClientRect().width;
                 var containerWidth = this.element.getBoundingClientRect().width;
                 var cols = Math.floor(containerWidth / colWidth);
-                var hs = [];
 
-                var pos = [], i = 0, l = children.length;
                 for (; i < l; i++) {
                     if (i < cols) {
                         hs.push(0);
@@ -85,11 +88,11 @@
                     var j = hs.indexOf(Math.min.apply(Math, hs)),
                         x = j * colWidth,
                         y = hs[j];
-                    pos.push([x, y]);
                     hs[j] += children[i].getBoundingClientRect().height;
                     this.setPosition(children[i], x, y);
                 }
-
+                this.hs = hs;
+                this.items = children;
                 this.element.style.height = Math.max.apply(Math, hs) + 'px';
             }
         }
@@ -97,18 +100,16 @@
         var waterfall = new Waterfall($app);
 
         var render = function () {
-            var items = [];
-            var items1 = [];
-            for (var i = 0; i < 12; i++) {
+            var items = [], l = waterfall.items.length;
+            for (var i = l; i < 10 + l; i++) {
                 var item = document.createElement('div');
                 item.className = 'item';
                 item.innerHTML = `<img src="${getImageUrl(i)}" alt="">`;
-                items1.push($app.appendChild(item));
+                items.push($app.appendChild(item));
             }
 
-            waterfall.addItems(items1);
-            imagesLoaded(items1, function () {
-                waterfall.layout();
+            imagesLoaded(items, function () {
+                waterfall.layout(items);
             });
         }
 
