@@ -26,21 +26,20 @@
             border: 1px solid salmon;
             width: 25%;
             overflow: hidden;
+            position: absolute;
+            transition: all 200ms linear;
         }
     </style>
 </head>
 
 <body>
     <div class="app"></div>
-    <script src="https://unpkg.com/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
+    <!-- <script src="https://unpkg.com/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script> -->
     <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+    <script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
     <script>
 
         var $app = document.querySelector('.app');
-
-        var msnry = new Masonry($app, {
-            itemSelector: '.item',
-        });
 
         var getRandom = function () {
             var opts = [60, 80, 100, 120, 160, 300];
@@ -51,23 +50,78 @@
             return `https://fakeimg.pl/${getRandom()}x${getRandom()}?text=${n}`;
         }
 
-        var render = function (node) {
+        class Waterfall {
+            element = null
+            cloumnWith = 0
+            items = []
+            constructor(element, opts = {}) {
+                this.element = element;
+                this.element.style.position = 'relative';
+                this.layout();
+            }
+            addItems(items = []) {
+                this.items = this.items.concat(items);
+            }
+
+            setPosition(el, left, top) {
+                el.style = `left: ${left}px; top: ${top}px;`
+            }
+            layout() {
+                var children = Array.from(this.items);
+                var firstChild = this.element.firstElementChild;
+                if (!firstChild) return;
+                var width = firstChild.getBoundingClientRect().width;
+                var containerWidth = this.element.getBoundingClientRect().width;
+                var n = Math.floor(containerWidth / width);
+                var hs = [];
+
+                var pos = [], i = 0, l = children.length;
+                for (; i < l; i++) {
+                    var j = i % n, x = j * width, y = 0;
+                    if (i < n) {
+                        hs[i] = children[j].getBoundingClientRect().height;
+                        pos.push([x, y]);
+                        this.setPosition(children[i], x, y);
+                        continue;
+                    }
+
+
+                    j = hs.indexOf(Math.min.apply(Math, hs));
+                    x = j * width;
+                    y = hs[j];
+                    pos.push([x, y]);
+                    hs[j] += children[i].getBoundingClientRect().height;
+                    this.setPosition(children[i], x, y);
+                }
+
+                this.element.style.height = Math.max.apply(Math, hs) + 'px';
+            }
+        }
+
+        var waterfall = new Waterfall($app);
+
+        var render = function () {
             var items = [];
+            var items1 = [];
             for (var i = 0; i < 12; i++) {
                 var item = document.createElement('div');
                 item.className = 'item';
-                item.innerHTML = `<img src="${getImageUrl(i)}" alt="">`
-                items.push(node.appendChild(item))
+                item.innerHTML = `<img src="${getImageUrl(i)}" alt="">`;
+                items1.push($app.appendChild(item));
             }
 
-            // msnry.appended(items);
-            msnry.addItems(items);
-            imagesLoaded(items, function (instance) {
-                msnry.layout();
+            waterfall.addItems(items1);
+            imagesLoaded(items1, function () {
+                waterfall.layout();
             });
         }
 
-        render($app);
+        render();
+
+        window.onresize = _.debounce(function (ev) {
+            console.log(ev.type);
+            waterfall.layout();
+        }, 150)
     </script>
 </body>
 
